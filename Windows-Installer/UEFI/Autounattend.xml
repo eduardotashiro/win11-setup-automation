@@ -28,7 +28,7 @@
             language="neutral"
             versionScope="nonSxS">
 
-            <!-- Ignora requisitos do Windows 11 (TPM, Secure Boot, RAM, CPU) -->
+            <!-- Ignora (TPM, Secure Boot, RAM, CPU) -->
             <RunSynchronous>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>1</Order>

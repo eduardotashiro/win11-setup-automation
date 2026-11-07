@@ -73,9 +73,9 @@ if ($TemInternet) {
 foreach ($Programa in $Programas.programas) {
 
     Write-Host ""
-    Write-Host "======================================"
+   Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
     Write-Host "Instalando: $($Programa.name)"
-    Write-Host "======================================"
+    Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 
     try {
 
@@ -167,9 +167,9 @@ foreach ($Programa in $Programas.programas) {
 }
 
 Write-Host ""
-Write-Host "======================================"
+Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 Write-Host " INSTALACAO FINALIZADA"
-Write-Host "======================================"
+Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 
 if ($Falhas.Count -gt 0) {
     Write-Host "Falharam: $($Falhas -join ', ')" -ForegroundColor Red
