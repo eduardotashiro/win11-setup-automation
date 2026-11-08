@@ -16,7 +16,7 @@ if (!(Test-Path $Temp)) {
 }
 
 function Wait-Internet {
-    param([int]$TimeoutSeconds = 300)
+    param([int]$TimeoutSeconds = 900)
 
     Write-Host "Aguardando conexao com a internet..."
     $Limite = (Get-Date).AddSeconds($TimeoutSeconds)
@@ -28,7 +28,7 @@ function Wait-Internet {
             return $true
         }
         catch {
-            Start-Sleep -Seconds 5
+            Start-Sleep -Seconds 30
         }
     }
 
@@ -60,7 +60,7 @@ function Wait-Winget {
     return $false
 }
 
-$Programas = Get-Content $Config -Raw | ConvertFrom-Json
+$Programs = Get-Content $Config -Raw | ConvertFrom-Json
 $Falhas = @()
 
 $TemInternet = Wait-Internet
@@ -70,7 +70,7 @@ if ($TemInternet) {
     $TemWinget = Wait-Winget
 }
 
-foreach ($Programa in $Programas.programas) {
+foreach ($Program in $Programs.programs) {
 
     Write-Host ""
    Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"

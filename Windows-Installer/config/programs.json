@@ -1,26 +1,35 @@
 {
-    "programas": [
-        {
-            "name": "Google Chrome",
-            "type": "winget",
-            "id": "Google.Chrome"
-        },
-        {
-            "name": "Slack",
-            "type": "winget",
-            "id": "SlackTechnologies.Slack"
-        },
-        {
-            "name": "Rymdport",
-            "type": "zip",
-            "url": "https://github.com/Jacalz/rymdport/releases/download/v3.9.1/rymdport-v3.9.1-windows-x86_64.zip",
-            "exeName": "rymdport.exe",
-            "installFolder": "C:\\Program Files\\Rymdport"
-        },
-        {
-            "name": "OpenVPN Connect",
-            "type": "msi",
-            "url": "https://openvpn.net/downloads/openvpn-connect-v3-windows.msi"
-        }
-    ]
+  "programs": [
+    {
+      "name": "Google Chrome",
+      "type": "winget",
+      "id": "Google.Chrome"
+    },
+    {
+      "name": "Slack",
+      "type": "winget",
+      "id": "SlackTechnologies.Slack"
+    },
+    {
+      "name": "Rymdport",
+      "type": "zip",
+      "architecture": "x86_64",
+      "url": "https://github.com/Jacalz/rymdport/releases/download/v3.9.1/rymdport-v3.9.1-windows-x86_64.zip",
+      "exeName": "Rymdport.exe",
+      "installFolder": "C:\\Program Files\\Rymdport"
+    },
+    {
+      "name": "Rymdport",
+      "type": "zip",
+      "architecture": "ARM64",
+      "url": "https://github.com/Jacalz/rymdport/releases/download/v3.9.1/rymdport-v3.9.1-windows-arm64.zip",
+      "exeName": "Rymdport.exe",
+      "installFolder": "C:\\Program Files\\Rymdport"
+    },
+    {
+      "name": "OpenVPN Connect",
+      "type": "msi",
+      "url": "https://openvpn.net/downloads/openvpn-connect-v3-windows.msi"
+    }
+  ]
 }
