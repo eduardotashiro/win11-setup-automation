@@ -74,7 +74,7 @@ foreach ($Program in $Programs.programs) {
 
     Write-Host ""
    Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
-    Write-Host "Instalando: $($Programa.name)"
+    Write-Host "Instalando: $($Program.name)"
     Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 
     try {
@@ -83,14 +83,14 @@ foreach ($Program in $Programs.programs) {
             throw "Sem conexao com a internet."
         }
 
-        if ($Programa.type -eq "winget") {
+        if ($Program.type -eq "winget") {
 
             if (-not $TemWinget) {
                 throw "winget indisponivel."
             }
 
             winget install `
-                --id $Programa.id `
+                --id $Program.id `
                 --exact `
                 --silent `
                 --accept-package-agreements `
@@ -102,14 +102,14 @@ foreach ($Program in $Programs.programs) {
             }
         }
 
-        elseif ($Programa.type -eq "msi") {
+        elseif ($Program.type -eq "msi") {
 
-            $Arquivo = Join-Path $Temp "$($Programa.name).msi"
+            $Arquivo = Join-Path $Temp "$($Program.name).msi"
 
             Write-Host "Baixando instalador..."
 
             Invoke-WebRequest `
-                -Uri $Programa.url `
+                -Uri $Program.url `
                 -OutFile $Arquivo
 
             Write-Host "Instalando..."
@@ -127,13 +127,13 @@ foreach ($Program in $Programs.programs) {
             }
         }
 
-        elseif ($Programa.type -eq "zip") {
+        elseif ($Program.type -eq "zip") {
 
-            $ZipFile = Join-Path $Temp "$($Programa.name).zip"
-            $ExtractPath = $Programa.installFolder
+            $ZipFile = Join-Path $Temp "$($Program.name).zip"
+            $ExtractPath = $Program.installFolder
 
             Write-Host "Baixando ZIP do GitHub..."
-            Invoke-WebRequest -Uri $Programa.url -OutFile $ZipFile
+            Invoke-WebRequest -Uri $Program.url -OutFile $ZipFile
 
             if (!(Test-Path $ExtractPath)) {
                 New-Item -ItemType Directory -Path $ExtractPath -Force | Out-Null
@@ -142,9 +142,9 @@ foreach ($Program in $Programs.programs) {
             Write-Host "Extraindo para $ExtractPath..."
             Expand-Archive -Path $ZipFile -DestinationPath $ExtractPath -Force
 
-            $ExePath = Join-Path $ExtractPath $Programa.exeName
+            $ExePath = Join-Path $ExtractPath $Program.exeName
             $DesktopPath = [Environment]::GetFolderPath("CommonDesktopDirectory")
-            $ShortcutPath = Join-Path $DesktopPath "$($Programa.name).lnk"
+            $ShortcutPath = Join-Path $DesktopPath "$($Program.name).lnk"
 
             $WScriptObj = New-Object -ComObject WScript.Shell
 
@@ -158,11 +158,11 @@ foreach ($Program in $Programs.programs) {
             Remove-Item $ZipFile -Force
         }
 
-        Write-Host "OK: $($Programa.name)" -ForegroundColor Green
+        Write-Host "OK: $($Program.name)" -ForegroundColor Green
     }
     catch {
-        Write-Host "ERRO em $($Programa.name): $($_.Exception.Message)" -ForegroundColor Red
-        $Falhas += $Programa.name
+        Write-Host "ERRO em $($Program.name): $($_.Exception.Message)" -ForegroundColor Red
+        $Falhas += $Program.name
     }
 }
 
