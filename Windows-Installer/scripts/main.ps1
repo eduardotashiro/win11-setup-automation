@@ -1,169 +1,121 @@
 ﻿$ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-Write-Host "********************"
+Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 Write-Host "Installer-Automation"
-Write-Host "********************"
+Write-Host " ________  __    __  __    __   ______
+/        |/  |  /  |/  \  /  | /      \
+$$$$$$$$/ $$ |  $$ |$$  \ $$ |/$$$$$$  |
+  $$ |   $$ |  $$ |$$$  \$$ |$$ |__$$ |
+  $$ |   $$ |  $$ |$$$$  $$ |$$    $$ |
+  $$ |   $$ |  $$ |$$ $$ $$ |$$$$$$$$ |
+  $$ |   $$ \__$$ |$$ |$$$$ |$$ |  $$ |
+  $$ |   $$    $$/ $$ | $$$ |$$ |  $$ |
+  $$/     $$$$$$/  $$/   $$/ $$/   $$/
+
+__        __  ______  __    __          __      __
+/  |  _  /  |/      |/  \  /  |        _/  |   _/  |
+$$ | / \ $$ |$$$$$$/ $$  \ $$ |       / $$ |  / $$ |
+$$ |/$  \$$ |  $$ |  $$$  \$$ |      $$$$ |  $$$$ |
+$$ /$$$  $$ |  $$ |  $$$$  $$ |        $$ |    $$ |
+$$ $$/$$ $$ |  $$ |  $$ $$ $$ |        $$ |    $$ |
+$$$$/  $$$$ | _$$ |_ $$ |$$$$ |       _$$ |_  _$$ |_
+$$$/    $$$ |/ $$   |$$ | $$$ |      / $$   |/ $$   |
+$$/      $$/ $$$$$$/ $$/   $$/       $$$$$$/ $$$$$$/ "
+Write-Host ""
 Write-Host ""
 
 $Root = Split-Path -Parent $PSScriptRoot
 $Config = Join-Path $Root "config\programs.json"
 
 $Temp = Join-Path $env:TEMP "WindowsSetup"
+if (!(Test-Path $Temp)) { New-Item -ItemType Directory -Path $Temp | Out-Null }
 
-if (!(Test-Path $Temp)) {
-    New-Item -ItemType Directory -Path $Temp | Out-Null
-}
+. "$PSScriptRoot\installers.ps1"
 
 function Wait-Internet {
     param([int]$TimeoutSeconds = 900)
-
     Write-Host "Aguardando conexao com a internet..."
-    $Limite = (Get-Date).AddSeconds($TimeoutSeconds)
+    $TimeLimit = (Get-Date).AddSeconds($TimeoutSeconds)
 
-    while ((Get-Date) -lt $Limite) {
+    while ((Get-Date) -lt $TimeLimit) {
         try {
             Invoke-WebRequest -Uri "http://www.msftconnecttest.com/connecttest.txt" -UseBasicParsing -TimeoutSec 5 | Out-Null
             Write-Host "Internet OK."
             return $true
-        }
-        catch {
-            Start-Sleep -Seconds 30
-        }
+        } catch { Start-Sleep -Seconds 30 }
     }
-
     Write-Host "Sem internet apos $TimeoutSeconds segundos." -ForegroundColor Red
     return $false
 }
 
 function Wait-Winget {
     param([int]$TimeoutSeconds = 600)
-
     Write-Host "Aguardando winget ficar disponivel..."
-    $Limite = (Get-Date).AddSeconds($TimeoutSeconds)
+    $TimeLimit = (Get-Date).AddSeconds($TimeoutSeconds)
 
-    while ((Get-Date) -lt $Limite) {
+    while ((Get-Date) -lt $TimeLimit) {
         if (Get-Command winget -ErrorAction SilentlyContinue) {
             Write-Host "winget OK."
             return $true
         }
-
-        try {
-            Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
-        }
-        catch { }
-
+        try { Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe } catch { }
         Start-Sleep -Seconds 10
     }
-
     Write-Host "winget nao ficou disponivel." -ForegroundColor Red
     return $false
 }
 
 $Programs = Get-Content $Config -Raw | ConvertFrom-Json
-$Falhas = @()
+$FailedApps = @()
 
-$TemInternet = Wait-Internet
-$TemWinget = $false
+$SystemArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+switch ($SystemArch.ToUpper()) {
+    "X64"   { $SystemArch = "x86_64" }
+    "ARM64" { $SystemArch = "ARM64" }
+    default { throw "Arquitetura nao suportada: $SystemArch" }
+}
 
-if ($TemInternet) {
-    $TemWinget = Wait-Winget
+$HasInternet = Wait-Internet
+$HasWinget = $false
+if ($HasInternet) {
+    $HasWinget = Wait-Winget
 }
 
 foreach ($Program in $Programs.programs) {
 
+    if ($Program.architecture -and $Program.architecture -ne $SystemArch) { continue }
+
     Write-Host ""
-   Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
+    Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
     Write-Host "Instalando: $($Program.name)"
     Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 
     try {
-
-        if (-not $TemInternet) {
-            throw "Sem conexao com a internet."
-        }
+        if (-not $HasInternet) { throw "Sem conexao com a internet." }
 
         if ($Program.type -eq "winget") {
-
-            if (-not $TemWinget) {
-                throw "winget indisponivel."
-            }
-
-            winget install `
-                --id $Program.id `
-                --exact `
-                --silent `
-                --accept-package-agreements `
-                --accept-source-agreements `
-                --source winget
-
-            if ($LASTEXITCODE -ne 0) {
-                throw "winget retornou codigo $LASTEXITCODE"
-            }
+            Install-WingetApp -Program $Program -HasWinget $HasWinget
         }
-
         elseif ($Program.type -eq "msi") {
-
-            $Arquivo = Join-Path $Temp "$($Program.name).msi"
-
-            Write-Host "Baixando instalador..."
-
-            Invoke-WebRequest `
-                -Uri $Program.url `
-                -OutFile $Arquivo
-
-            Write-Host "Instalando..."
-
-            $Proc = Start-Process `
-                "msiexec.exe" `
-                -ArgumentList "/i `"$Arquivo`" /qn /norestart" `
-                -Wait `
-                -PassThru
-
-            Remove-Item $Arquivo -Force
-
-            if ($Proc.ExitCode -ne 0 -and $Proc.ExitCode -ne 3010) {
-                throw "msiexec retornou codigo $($Proc.ExitCode)"
-            }
+            Install-MsiApp -Program $Program -TempFolder $Temp
         }
-
         elseif ($Program.type -eq "zip") {
-
-            $ZipFile = Join-Path $Temp "$($Program.name).zip"
-            $ExtractPath = $Program.installFolder
-
-            Write-Host "Baixando ZIP do GitHub..."
-            Invoke-WebRequest -Uri $Program.url -OutFile $ZipFile
-
-            if (!(Test-Path $ExtractPath)) {
-                New-Item -ItemType Directory -Path $ExtractPath -Force | Out-Null
-            }
-
-            Write-Host "Extraindo para $ExtractPath..."
-            Expand-Archive -Path $ZipFile -DestinationPath $ExtractPath -Force
-
-            $ExePath = Join-Path $ExtractPath $Program.exeName
-            $DesktopPath = [Environment]::GetFolderPath("CommonDesktopDirectory")
-            $ShortcutPath = Join-Path $DesktopPath "$($Program.name).lnk"
-
-            $WScriptObj = New-Object -ComObject WScript.Shell
-
-            $Shortcut = $WScriptObj.CreateShortcut($ShortcutPath)
-
-            $Shortcut.TargetPath = $ExePath
-
-            $Shortcut.Save()
-
-            Write-Host "Atalho criado na Area de Trabalho com sucesso!"
-            Remove-Item $ZipFile -Force
+            Install-ZipApp -Program $Program -TempFolder $Temp
         }
 
         Write-Host "OK: $($Program.name)" -ForegroundColor Green
-    }
-    catch {
+
+    } catch {
         Write-Host "ERRO em $($Program.name): $($_.Exception.Message)" -ForegroundColor Red
-        $Falhas += $Program.name
+        $FailedApps += $Program.name
     }
+}
+
+if ($HasInternet) {
+    Activate-Windows
+} else {
+    Write-Host "ativacao do win11 ignorada (sem internet)" -ForegroundColor Yellow
 }
 
 Write-Host ""
@@ -171,10 +123,9 @@ Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 Write-Host " INSTALACAO FINALIZADA"
 Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 
-if ($Falhas.Count -gt 0) {
-    Write-Host "Falharam: $($Falhas -join ', ')" -ForegroundColor Red
-}
-else {
+if ($FailedApps.Count -gt 0) {
+    Write-Host "Falharam: $($FailedApps -join ', ')" -ForegroundColor Red
+} else {
     Write-Host "Todos os programas foram instalados." -ForegroundColor Green
 }
 

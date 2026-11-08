@@ -1,6 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<unattend xmlns="urn:schemas-microsoft-com:unattend"
-          xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+<?xml version="1.0" encoding="utf-8" ?>
+<unattend
+    xmlns="urn:schemas-microsoft-com:unattend"
+    xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
+>
 
     <settings pass="windowsPE">
 
@@ -9,7 +11,8 @@
             processorArchitecture="amd64"
             publicKeyToken="31bf3856ad364e35"
             language="neutral"
-            versionScope="nonSxS">
+            versionScope="nonSxS"
+        >
 
             <SetupUILanguage>
                 <UILanguage>pt-BR</UILanguage>
@@ -26,25 +29,30 @@
             processorArchitecture="amd64"
             publicKeyToken="31bf3856ad364e35"
             language="neutral"
-            versionScope="nonSxS">
+            versionScope="nonSxS"
+        >
 
             <!-- Ignora requisitos do Windows 11 (TPM, Secure Boot, RAM, CPU) -->
             <RunSynchronous>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>1</Order>
-                    <Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassTPMCheck /t REG_DWORD /d 1 /f</Path>
+                    <Path
+                    >reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassTPMCheck /t REG_DWORD /d 1 /f</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>2</Order>
-                    <Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassSecureBootCheck /t REG_DWORD /d 1 /f</Path>
+                    <Path
+                    >reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassSecureBootCheck /t REG_DWORD /d 1 /f</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>3</Order>
-                    <Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassRAMCheck /t REG_DWORD /d 1 /f</Path>
+                    <Path
+                    >reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassRAMCheck /t REG_DWORD /d 1 /f</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>4</Order>
-                    <Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassCPUCheck /t REG_DWORD /d 1 /f</Path>
+                    <Path
+                    >reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassCPUCheck /t REG_DWORD /d 1 /f</Path>
                 </RunSynchronousCommand>
             </RunSynchronous>
 
@@ -130,7 +138,8 @@
             processorArchitecture="amd64"
             publicKeyToken="31bf3856ad364e35"
             language="neutral"
-            versionScope="nonSxS">
+            versionScope="nonSxS"
+        >
 
             <InputLocale>0416:00010416</InputLocale>
             <SystemLocale>pt-BR</SystemLocale>
@@ -144,7 +153,8 @@
             processorArchitecture="amd64"
             publicKeyToken="31bf3856ad364e35"
             language="neutral"
-            versionScope="nonSxS">
+            versionScope="nonSxS"
+        >
 
             <OOBE>
                 <HideEULAPage>true</HideEULAPage>
@@ -183,7 +193,8 @@
             <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">
                     <Order>1</Order>
-                    <CommandLine>cmd.exe /c "for %i in (C D E F G H I J K L M N O P Q R S T U V W X Y Z) do if exist %i:\Windows-Installer\scripts\main.ps1 powershell -ExecutionPolicy Bypass -WindowStyle Maximized -File %i:\Windows-Installer\scripts\main.ps1"</CommandLine>
+                    <CommandLine
+                    >cmd.exe /c "for %i in (C D E F G H I J K L M N O P Q R S T U V W X Y Z) do if exist %i:\Windows-Installer\scripts\main.ps1 powershell -ExecutionPolicy Bypass -WindowStyle Maximized -File %i:\Windows-Installer\scripts\main.ps1"</CommandLine>
                     <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
             </FirstLogonCommands>
