@@ -1,18 +1,24 @@
-The bootable USB stick must be organised in this way when you format the computer, and obviously it must be connected to a wired internet connection.
+# win11-setup-automation
 
-> CODE P11
+Automação _Zero-Touch_ para instalação do Windows 11 com bypass de hardware e instalação de softwares..
+
+**Requisito:** O computador deve estar conectado a uma rede cabeada durante a formatação..
+
+## Estrutura do Pendrive
+
+O pendrive bootável do Windows deve ser organizado exatamente desta forma na raiz:
 
 ```text
 Pendrive/
-├── boot/
-├── efi/
-├── sources/
-├── Autounattend.xml
-├── setup.exe
-└── Windows-Installer/
-    ├── config/
-    │   └── programs.json
-    └── scripts/
-        ├── installers.ps1
-        └── main.ps1
+ ├── boot/
+ ├── efi/
+ ├── sources/
+ ├── setup.exe
+ ├── Autounattend.xml           Arquivo de resposta na raiz
+ └── Windows-Installer/         Pasta deste repositório
+      ├── config/
+      │   └── programs.json
+      └── scripts/
+          ├── installers.ps1
+          └── main.ps1
 ```
