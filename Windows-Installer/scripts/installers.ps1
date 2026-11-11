@@ -145,7 +145,8 @@ function Update-Windows {
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue | Out-Null
 
         # modulo pswindowsupdate
-        Install-Module -Name PSWindowsUpdate -Force -AcceptLicense -ErrorAction Stop | Out-Null
+        # https://learn.microsoft.com/en-us/powershell/gallery/concepts/module-license-acceptance?view=powershellget-3.x
+        Install-Module -Name PSWindowsUpdate -Force -ErrorAction Stop | Out-Null
         Import-Module PSWindowsUpdate -ErrorAction Stop
 
         Write-Host "procurando e instalando atualizacoes, paciencia..."
