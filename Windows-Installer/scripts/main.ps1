@@ -1,5 +1,4 @@
-﻿
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
 Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
@@ -55,12 +54,12 @@ switch ($Architecture.ToUpper()) {
     default { throw "Arquitetura nao suportada: $Architecture" }
 }
 
-Write-Host "Arquitetura detectada: $SystemArch" -ForegroundColor Cyan
+Write-Host "arquitetura : $SystemArch" -ForegroundColor Cyan
 
 function Wait-Internet {
     param([int]$TimeoutSeconds = 900)
 
-    Write-Host "Aguardando conexao com a internet..."
+    Write-Host "aguardando conexao internet..."
 
     $TimeLimit = (Get-Date).AddSeconds($TimeoutSeconds)
 
@@ -71,7 +70,7 @@ function Wait-Internet {
                 -UseBasicParsing `
                 -TimeoutSec 5 | Out-Null
 
-            Write-Host "Internet OK."
+            Write-Host "internet OK"
             return $true
 
         } catch {
@@ -79,21 +78,21 @@ function Wait-Internet {
         }
     }
 
-    Write-Host "Sem internet apos $TimeoutSeconds segundos." -ForegroundColor Red
+    Write-Host "sem internet apos $TimeoutSeconds seg" -ForegroundColor Red
     return $false
 }
 
 function Wait-Winget {
     param([int]$TimeoutSeconds = 600)
 
-    Write-Host "Aguardando winget ficar disponivel..."
+    Write-Host "aguardando winget ficar disponivel..."
 
     $TimeLimit = (Get-Date).AddSeconds($TimeoutSeconds)
 
     while ((Get-Date) -lt $TimeLimit) {
 
         if (Get-Command winget -ErrorAction SilentlyContinue) {
-            Write-Host "winget OK."
+            Write-Host "winget OK"
             return $true
         }
 
@@ -109,44 +108,11 @@ function Wait-Winget {
     return $false
 }
 
-function Install-WingetApp {
-    param (
-        $Program,
-        $HasWinget
-    )
-
-    if (-not $HasWinget) {
-        throw "winget nao esta disponivel."
-    }
-
-    winget install `
-        --id $Program.id `
-        --exact `
-        --silent `
-        --accept-package-agreements `
-        --accept-source-agreements `
-        --source winget
-
-    $WingetExitCode = $LASTEXITCODE
-
-    if ($WingetExitCode -eq 0) {
-        return
-    }
-
-    # programa ja instalado e sem updates
-    if ($WingetExitCode -eq -1978335189) {
-        Write-Host "Programa ja instalado e sem atualizacao disponivel." -ForegroundColor Yellow
-        return
-    }
-
-    throw "winget falhou e retornou o codigo $WingetExitCode"
-}
-
 # https://massgrave.dev/
 function Activate-Windows {
 
     Write-Host ""
-    Write-Host "Verificando ativacao do Windows..."
+    Write-Host "verificando ativacao do win..."
 
     try {
         $Process = Start-Process `
@@ -157,18 +123,18 @@ function Activate-Windows {
             -NoNewWindow
 
         if ($Process.ExitCode -eq 0) {
-            Write-Host "Solicitacao de ativacao concluida." -ForegroundColor Green
+            Write-Host "solicitacao de ativacao concluida" -ForegroundColor Green
         } else {
-            Write-Host "Ativacao nao concluida. Verifique a licenca do Windows." -ForegroundColor Yellow
+            Write-Host "ativacao nao concluida" -ForegroundColor Yellow
         }
 
     } catch {
-        Write-Host "Erro na ativacao: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "erro na ativacao: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
 if (!(Test-Path $Config)) {
-    throw "Arquivo de configuracao nao encontrado: $Config"
+    throw "arquivo de config nao encontrada: $Config"
 }
 
 $Programs = Get-Content $Config -Raw | ConvertFrom-Json
@@ -181,7 +147,6 @@ if ($HasInternet) {
     $HasWinget = Wait-Winget
 }
 
-# Instala programas
 foreach ($Program in $Programs.programs) {
 
     if ($Program.architecture -and $Program.architecture -ne $SystemArch) {
@@ -196,7 +161,7 @@ foreach ($Program in $Programs.programs) {
     try {
 
         if (-not $HasInternet) {
-            throw "Sem conexao com a internet."
+            throw "sem conexao com a internet"
         }
 
         if ($Program.type -eq "winget") {
@@ -215,7 +180,7 @@ foreach ($Program in $Programs.programs) {
 
         }
         else {
-            throw "Tipo de instalacao desconhecido: $($Program.type)"
+            throw "tipo de instalacao desconhecido: $($Program.type)"
         }
 
         Write-Host "OK: $($Program.name)" -ForegroundColor Green
@@ -234,7 +199,7 @@ if ($HasInternet) {
     Update-Windows
 }
 else {
-    Write-Host "Ativacao e Windows Update ignorados (sem internet)." -ForegroundColor Yellow
+    Write-Host "ativacao e win-update ignorados (sem internet)" -ForegroundColor Yellow
 }
 
 # Resultado final
@@ -244,10 +209,12 @@ Write-Host " INSTALACAO FINALIZADA"
 Write-Host "-*-*-*-*-*-*-*-*-*-*-*-*"
 
 if ($FailedApps.Count -gt 0) {
-    Write-Host "Falharam: $($FailedApps -join ', ')" -ForegroundColor Red
+    Write-Host "falharam: $($FailedApps -join ', ')" -ForegroundColor Red
 }
 else {
-    Write-Host "Todos os programas foram instalados." -ForegroundColor Green
+    Write-Host "todos os programas foram instalados." -ForegroundColor Green
 }
 
-Start-Sleep -Seconds 10
+Write-Host "reiniciando auto em 20 segundos" -ForegroundColor Cyan
+Start-Sleep -Seconds 20
+Restart-Computer -Force
