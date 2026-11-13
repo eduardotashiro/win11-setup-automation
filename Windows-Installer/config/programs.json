@@ -2,8 +2,8 @@
   "programs": [
     {
       "name": "Google Chrome",
-      "type": "winget",
-      "id": "Google.Chrome"
+      "type": "msi",
+      "url": "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi"
     },
     {
       "name": "Slack",
